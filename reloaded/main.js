@@ -61,14 +61,14 @@ var btn_func = new Array();
 // battle class
 var Battle = function(){
 	this.dn = 0;	// dice number (stop position)
-	this.arm = 0;	// dice color
-	this.dmax = 0;	// number of dice
+	this.diceColor = 0;	// dice color
+	this.numDice = 0;	// number of dice on field
 	this.deme = [0,0,0,0,0,0,0,0];
 	this.sum = 0;
 	this.fin = [0,0,0,0,0,0,0,0];	// end flag
 	this.usedice = [0,1,2,3,4,5,6,7];	// used dice
 }
-var battle = new Array();
+var combatants = new Array();
 var bturn = 0;	// battle turn
 
 // replay
@@ -127,7 +127,7 @@ function init() {
 	ypos_mes = org.ypos_mes*nume/deno;
 	ypos_arm = org.ypos_arm*nume/deno;
 	dot = 1*nume/deno;
-	for( i=0; i<2; i++ ) battle[i] = new Battle();
+	for( i=0; i<2; i++ ) combatants[i] = new Battle();
 
 	// sprite number
 	var sn = 0;
@@ -477,8 +477,8 @@ function start_title(){
 	for( i=0; i<7; i++ ){
 		spr[sn_pmax].getChildByName("p"+i).color = (i==game.pmax-2)?"#aa0000":"#cccccc";
 	}
-	
-	// ボタン
+
+	// button
 	spr[sn_btn+0].x = resize(640);
 	spr[sn_btn+0].y = resize(390);
 	spr[sn_btn+0].visible = true;
@@ -529,6 +529,7 @@ function make_map(){
 		n = prio[i].an;
 		prio[i].cpos = game.adat[n].cpos;
 	}
+	// sort by center position
 	for( i=0; i<game.AREA_MAX-1; i++ ){
 		for( j=i; j<game.AREA_MAX; j++ ){
 			if( prio[i].cpos>prio[j].cpos ){
@@ -599,7 +600,7 @@ function draw_areashape( sn, area, paint_mode ){
 	if( paint_mode ) line_color = "#ff0000";
 	spr[sn].graphics.beginStroke(line_color);
 	var armcolor = ["#b37ffe","#b3ff01","#009302","#ff7ffe","#ff7f01","#b3fffe","#ffff01","#ff5858"];
-	var color = armcolor[game.adat[area].arm];
+	var color = armcolor[game.adat[area].diceColor];
 	if( paint_mode ) color = "#000000";
 	spr[sn].graphics.setStrokeStyle(4*nume/deno,"round","round").beginFill(color);
 	var px=ax[d];
@@ -627,7 +628,7 @@ function draw_areadice(sn,area){
 	var n = game.adat[area].cpos;
 	spr[sn].x = Math.floor(cpos_x[n] + 6*nume/deno);
 	spr[sn].y = Math.floor(cpos_y[n] - 10*nume/deno);
-	spr[sn].gotoAndStop(game.adat[area].arm*10+game.adat[area].dice-1);
+	spr[sn].gotoAndStop(game.adat[area].diceColor*10+game.adat[area].dice-1);
 }
 
 ////////////////////////////////////////////////////
@@ -752,7 +753,7 @@ function first_click(){
 	var p = game.jun[game.ban];
 	var an = clicked_area();
 	if( an<0 ) return;
-	if( game.adat[an].arm != p ) return;
+	if( game.adat[an].diceColor != p ) return;
 	if( game.adat[an].dice<=1 ) return;
 
 	spr[sn_mes].visible = false;
@@ -777,7 +778,7 @@ function second_click(){
 		start_man();
 		return;
 	}
-	if( game.adat[an].arm == p ) return;
+	if( game.adat[an].diceColor == p ) return;
 	if( game.adat[an].join[game.area_from]==0 ) return;
 	
 	game.area_to = an;
@@ -862,40 +863,41 @@ function start_battle(){
 	}
 	*/
 
-	//  battle scene variables
+	//  battle scene
 	var an = [game.area_from,game.area_to];
 	for( i=0; i<2; i++ ){
-		battle[i].arm = game.adat[an[i]].arm;
-		battle[i].dmax = game.adat[an[i]].dice;
+		combatants[i].diceColor = game.adat[an[i]].diceColor;
+		combatants[i].numDice = game.adat[an[i]].dice;
+		// randomly select dice to use - necessary?
+		///for( j=0; j<8; j++ ){
+			///var rand = Math.floor(Math.random()*8);
+			///var tmp = combatants[i].usedice[j];
+			///combatants[i].usedice[j] = combatants[i].usedice[rand];
+			///combatants[i].usedice[rand] = tmp;
+		///}
+		combatants[i].sum=0;
 		for( j=0; j<8; j++ ){
-			var r = Math.floor(Math.random()*8);
-			var tmp = battle[i].usedice[j];
-			battle[i].usedice[j] = battle[i].usedice[r];
-			battle[i].usedice[r] = tmp;
-		}
-		battle[i].sum=0;
-		for( j=0; j<8; j++ ){
-			battle[i].deme[j] = Math.floor(Math.random()*6);
-			if( battle[i].usedice[j]<battle[i].dmax ){
-				battle[i].sum += 1+battle[i].deme[j];
+			combatants[i].deme[j] = Math.floor(Math.random()*6);
+			if( combatants[i].usedice[j]<combatants[i].numDice ){
+				combatants[i].sum += 1+combatants[i].deme[j];
 			}
-			battle[i].fin[j] = false;
+			combatants[i].fin[j] = false;
 		}
 	}
 
-        //  20220911  don't show the battle(?) sprite
+    //  20220911  don't show the battle(?) sprite
 	//  spr[sn_battle].visible = true;
 	
 	for( i=0; i<2; i++ ){
 		var w = 4;
 		var h = 2;
-		var r = 8;
+		var rand = 8;
 		var ox = (i==0)?w*100:-w*90;
 		var oy = (i==0)?-h*50:h*60;
 		for( j=0; j<8; j++ ){
 			var o = spr[sn_battle].getChildByName("d"+i+j);
-			o.vx = ox + (j%3)*10*w - Math.floor(j/3)*10*w + Math.random()*r;
-			o.vy = oy + (j%3)*10*h + Math.floor(j/3)*10*h + Math.random()*r;
+			o.vx = ox + (j%3)*10*w - Math.floor(j/3)*10*w + Math.random()*rand;
+			o.vy = oy + (j%3)*10*h + Math.floor(j/3)*10*h + Math.random()*rand;
 			o.x = o.vx;
 			o.y = o.vy;
 			o.z = Math.random()*10;
@@ -937,7 +939,7 @@ function battle_dice(){
 	var f=false;
 	var soundflg = false;
 	for( i=0; i<8; i++ ){
-		if( battle[bturn].fin[i]>0 ) continue;
+		if( combatants[bturn].fin[i]>0 ) continue;
 		var o = spr[sn_battle].getChildByName("d"+bturn+i);
 		o.visible = true;
 		o.vx += w;
@@ -949,39 +951,39 @@ function battle_dice(){
 			o.up = 5-o.bc*3;
 			o.bc++;
 			if( o.bc>=2 ){
-				battle[bturn].fin[i] = 1;
+				combatants[bturn].fin[i] = 1;
 				if( bturn==0 ){
 					if( i>=3 ){
-						if( battle[bturn].fin[i-3]==0 ) battle[bturn].fin[i] = 0;
+						if( combatants[bturn].fin[i-3]==0 ) combatants[bturn].fin[i] = 0;
 					}
 					if( i>=2 ){
-						if( battle[bturn].fin[i-2]==0 ) battle[bturn].fin[i] = 0;
+						if( combatants[bturn].fin[i-2]==0 ) combatants[bturn].fin[i] = 0;
 					}
 				}else{
 					if( i<5 ){
-						if( battle[bturn].fin[i+3]==0 ) battle[bturn].fin[i] = 0;
+						if( combatants[bturn].fin[i+3]==0 ) combatants[bturn].fin[i] = 0;
 					}
 					if( i<6 ){
-						if( battle[bturn].fin[i+2]==0 ) battle[bturn].fin[i] = 0;
+						if( combatants[bturn].fin[i+2]==0 ) combatants[bturn].fin[i] = 0;
 					}
 				}
 			}
 			if( o.bc==1 ){
-				if( battle[bturn].usedice[i]<battle[bturn].dmax ) soundflg = true;
+				if( combatants[bturn].usedice[i]<combatants[bturn].numDice ) soundflg = true;
 			}
 		}
 		o.x = o.vx;
 		o.y = o.vy-o.z;
-		o.gotoAndStop("d"+battle[bturn].arm+Math.floor(Math.random()*6));
-		if( battle[bturn].fin[i]>0 ){
-			o.gotoAndStop("d"+battle[bturn].arm+battle[bturn].deme[i]);
-			if( battle[bturn].usedice[i]<battle[bturn].dmax ) soundflg = true;
+		o.gotoAndStop("d"+combatants[bturn].diceColor+Math.floor(Math.random()*6));
+		if( combatants[bturn].fin[i]>0 ){
+			o.gotoAndStop("d"+combatants[bturn].diceColor+combatants[bturn].deme[i]);
+			if( combatants[bturn].usedice[i]<combatants[bturn].dmax ) soundflg = true;
 		}
 		var s = spr[sn_battle].getChildByName("s"+bturn+i);
 		s.visible = true;
 		s.x = o.vx;
 		s.y = o.vy;
-		if( battle[bturn].usedice[i]>=battle[bturn].dmax ){
+		if( combatants[bturn].usedice[i]>=combatants[bturn].num_dice ){
 			o.visible = false;
 			s.visible = false;
 		}
@@ -989,16 +991,14 @@ function battle_dice(){
 	}
 	if( !f ){
 		spr[sn_battle].getChildByName("n"+bturn).visible = true;
-		spr[sn_battle].getChildByName("n"+bturn).text = ""+battle[bturn].sum;
+		spr[sn_battle].getChildByName("n"+bturn).text = ""+combatants[bturn].sum;
 		bturn++;
 		if( bturn>=2 ){
 			waitcount=15;
 			timer_func = after_battle;
 		}
 	}
-	if( soundflg ){
-		playSound("snd_dice");
-	}
+	if( soundflg ) playSound("snd_dice");
 	stage.update();
 }
 
@@ -1013,13 +1013,13 @@ function after_battle(){
 		spr[sn_player+i].visible = true;
 	}
 	
-	var arm0 = game.adat[game.area_from].arm;
-	var arm1 = game.adat[game.area_to].arm;
-	var defeat = ( battle[0].sum>battle[1].sum ) ? 1 : 0;
+	var arm0 = game.adat[game.area_from].diceColor;
+	var arm1 = game.adat[game.area_to].diceColor;
+	var defeat = ( combatants[0].sum>combatants[1].sum ) ? 1 : 0;
 	if( defeat>0 ){
 		game.adat[game.area_to].dice = game.adat[game.area_from].dice-1;
 		game.adat[game.area_from].dice = 1;
-		game.adat[game.area_to].arm = arm0;
+		game.adat[game.area_to].diceColor = arm0;
 		game.set_area_tc(arm0);
 		game.set_area_tc(arm1);
 		playSound("snd_success");
@@ -1099,7 +1099,7 @@ function supply_dice(){
 	c = 0;
 	for( var i=0; i<game.AREA_MAX; i++ ){
 		if( game.adat[i].size == 0 ) continue;
-		if( game.adat[i].arm != pn ) continue;
+		if( game.adat[i].diceColor != pn ) continue;
 		if( game.adat[i].dice >= 8 ) continue;
 		list[c] = i;
 		c++;
@@ -1257,7 +1257,7 @@ function start_history(){
 	for( i=0; i<game.AREA_MAX; i++ ){
 		if( game.adat[i].size==0 ) continue;
 		game.adat[i].dice = game.his_dice[i];
-		game.adat[i].arm = game.his_arm[i];
+		game.adat[i].diceColor = game.his_arm[i];
 		draw_areashape(sn_area+i,i,0);
 	}
 	for( i=0; i<game.AREA_MAX; i++ ){
@@ -1329,7 +1329,7 @@ function play_history(){
 			if( game.his[replay_c].res>0 ){
 				game.adat[an1].dice = game.adat[an0].dice-1;
 				game.adat[an0].dice = 1;
-				game.adat[an1].arm = game.adat[an0].arm;
+				game.adat[an1].diceColor = game.adat[an0].diceColor;
 				playSound("snd_success");
 			}else{
 				game.adat[an0].dice = 1;

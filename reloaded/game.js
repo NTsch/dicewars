@@ -1,7 +1,7 @@
 var AreaData = function(){
 	this.size=0;		// 0.不在 1～
 	this.cpos=0;		// 中心セル
-	this.arm=0;		// 属軍
+	this.diceColor=0;		// 属軍
 	this.dice=0;		// サイコロ数
 	
 	// 中心地を決めるための変数
@@ -125,7 +125,7 @@ var Game = function(){
 		// 履歴
 		this.his_c = 0;
 		for( i=0; i<this.AREA_MAX; i++ ){
-			this.his_arm[i] = this.adat[i].arm;
+			this.his_arm[i] = this.adat[i].diceColor;
 			this.his_dice[i] = this.adat[i].dice;
 		}
 	}
@@ -139,10 +139,10 @@ var Game = function(){
 			var f = 0;
 			for( i=1; i<this.AREA_MAX; i++ ){
 				if( this.adat[i].size == 0 ) continue;
-				if( this.adat[i].arm != pn ) continue;
+				if( this.adat[i].diceColor != pn ) continue;
 				for( j=1; j<this.AREA_MAX; j++ ){
 					if( this.adat[j].size == 0 ) continue;
-					if( this.adat[j].arm != pn ) continue;
+					if( this.adat[j].diceColor != pn ) continue;
 					if( this.adat[i].join[j]==0 ) continue;
 					if( this.chk[j] == this.chk[i] ) continue;
 					if( this.chk[i] > this.chk[j] ) this.chk[i]=this.chk[j]; else this.chk[j]=this.chk[i];
@@ -156,7 +156,7 @@ var Game = function(){
 		for( i=0; i<this.AREA_MAX; i++ ) this.tc[i]=0;
 		for( i=1; i<this.AREA_MAX; i++ ){
 			if( this.adat[i].size == 0 ) continue;
-			if( this.adat[i].arm != pn ) continue;
+			if( this.adat[i].diceColor != pn ) continue;
 			this.tc[this.chk[i]]++;
 		}
 		var max = 0;
@@ -304,20 +304,20 @@ var Game = function(){
 		}
 
 		// エリア属軍を決める
-		for( i=0; i<this.AREA_MAX; i++ ) this.adat[i].arm = -1;
+		for( i=0; i<this.AREA_MAX; i++ ) this.adat[i].diceColor = -1;
 		var arm=0;	// 属軍
 		var alist = new Array(this.AREA_MAX);	// エリアリスト
 		while( 1 ){
 			var c = 0;
 			for( i=1; i<this.AREA_MAX; i++ ){
 				if( this.adat[i].size == 0 ) continue;
-				if( this.adat[i].arm >= 0 ) continue;
+				if( this.adat[i].diceColor >= 0 ) continue;
 				alist[c] = i;
 				c++;
 			}
 			if( c==0 ) break;
 			var an = alist[Math.floor(Math.random()%c)];
-			this.adat[an].arm = arm;
+			this.adat[an].diceColor = arm;
 			arm++; if( arm>=this.pmax ) arm=0;
 		}
 		// エリア描画線のデータ作成
@@ -352,7 +352,7 @@ var Game = function(){
 			var c = 0;
 			for( j=1; j<this.AREA_MAX; j++ ){
 				if( this.adat[j].size == 0 ) continue;
-				if( this.adat[j].arm != p ) continue;
+				if( this.adat[j].diceColor != p ) continue;
 				if( this.adat[j].dice >= 8 ) continue;
 				list[c] = j;
 				c++;
@@ -454,7 +454,7 @@ var Game = function(){
 		var sum = 0;
 		for( i=1; i<this.AREA_MAX; i++ ){
 			if( this.adat[i].size == 0 ) continue;
-			var arm = this.adat[i].arm;
+			var arm = this.adat[i].diceColor;
 			this.player[arm].area_c++;
 			this.player[arm].dice_c += this.adat[i].dice;
 			sum += this.adat[i].dice;
@@ -482,19 +482,19 @@ var Game = function(){
 		var pn = this.jun[this.ban];
 		for( i=1; i<this.AREA_MAX; i++ ){
 			if( this.adat[i].size == 0 ) continue;
-			if( this.adat[i].arm != pn ) continue;
+			if( this.adat[i].diceColor != pn ) continue;
 			if( this.adat[i].dice <= 1 ) continue;
 			for( j=1; j<this.AREA_MAX; j++ ){
 				if( this.adat[j].size == 0 ) continue;
-				if( this.adat[j].arm == pn ) continue;
+				if( this.adat[j].diceColor == pn ) continue;
 				if( this.adat[i].join[j]==0 ) continue;
 				if( top>=0 ){	// ダントツがいて、２着以下から２着以下
-					if( this.adat[i].arm!=top && this.adat[j].arm!=top ) continue;
+					if( this.adat[i].diceColor!=top && this.adat[j].diceColor!=top ) continue;
 				}
 				if( this.adat[j].dice > this.adat[i].dice ) continue;	// 敵が多勢
 				// 敵と同数の場合
 				if( this.adat[j].dice == this.adat[i].dice ){
-					var en = this.adat[j].arm;
+					var en = this.adat[j].diceColor;
 					var f=0;
 					if( this.player[pn].dice_jun == 0 ) f=1;		// 自分がトップの時は仕掛ける
 					if( this.player[en].dice_jun == 0 ) f=1;		// 相手がトップの時は仕掛ける

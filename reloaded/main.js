@@ -266,7 +266,7 @@ function init() {
 	goshape.graphics.beginFill("#000000").drawRect(-org.view_w/2+10,-180,org.view_w-20,360);
 	goshape.name = "bg";
 	spr[sn].addChild(goshape);
-	var gotext = new createjs.Text("G A M E O V E R", "80px Anton", "White")
+	var gotext = new createjs.Text("Y O U   D I E D", "80px Anton, Arial, sans-serif", "Red")
 	gotext.textBaseline = "middle";
 	gotext.textAlign = "center";
 	gotext.name = "mes";
@@ -305,13 +305,13 @@ function init() {
 	
 	// for loading (to preload web fonts)
 	sn_load = sn;
-	spr[sn] = new createjs.Text("Now loading...", Math.floor(24*nume/deno)+"px Anton", "#000000");
+	spr[sn] = new createjs.Text("Now loading...", Math.floor(24*nume/deno)+"px Anton", "#ffffff");
 	stage.addChild(spr[sn]);
 	sn++;
 
 	// generic message
 	sn_mes = sn;
-	spr[sn] = new createjs.Text("Now loading...", Math.floor(30*nume/deno)+"px Roboto", "#000000");
+	spr[sn] = new createjs.Text("Now loading...", Math.floor(30*nume/deno)+"px Roboto", "#ffffff");
 	spr[sn].textAlign = "center";
 	spr[sn].textBaseline = "middle";
 	stage.addChild(spr[sn]);
@@ -554,7 +554,7 @@ function make_map(){
 
 	spr[sn_mes].visible = true;
 	spr[sn_mes].text = "Play this board?";
-	spr[sn_mes].color = "#000000";
+	spr[sn_mes].color = "#ffffff";
 	spr[sn_mes].textAlign = "left";
 	spr[sn_mes].x = view_w*0.1;
 	spr[sn_mes].y = ypos_mes;
@@ -705,7 +705,7 @@ function start_man(){
 	
 	spr[sn_mes].visible = true;
 	spr[sn_mes].text = "1. Click your area. 2. Click neighbor to attack.";
-	spr[sn_mes].color = "#000000";
+	spr[sn_mes].color = "#ffffff";
 	spr[sn_mes].textAlign = "left";
 	spr[sn_mes].x = view_w*0.05;
 	spr[sn_mes].y = ypos_mes;
@@ -1355,14 +1355,3 @@ function play_history(){
 function toppage(){
 	location.href="https://www.gamedesign.jp/";
 }
-
-
-
-
-
-
-
-
-
-
-
